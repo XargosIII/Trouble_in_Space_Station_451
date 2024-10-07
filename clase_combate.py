@@ -13,7 +13,7 @@ ANCHO_PANTALLA = 480
 ALTO_PANTALLA = 320
 TAMANO_SPRITE = 16
 
-class FaseCombate:
+class FaseCombate: 
     def __init__(self, aliados: list[ch.Superguerrero], enemigos: list[ch.Superguerrero]):
         # Inicializador de enemigos y aliados
         self.aliados = aliados

@@ -1,6 +1,6 @@
 import pyxel as px
 
-class Contenedor:
+class Contenedor: 
     """ Clase para pintar un marco donde queramos y algunos metodos para añadir elementos o texto """
     def __init__(self, x, y, ancho, alto, titulo=""):
         # "Coordenadas" donde empezamos a pintar el marco

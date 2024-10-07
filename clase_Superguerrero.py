@@ -2,7 +2,7 @@ import random
 
 ########################### Superclase Superguerrero ###########################
 
-class Superguerrero:
+class Superguerrero: 
     def __init__(self, nombre, salud, salud_max, velocidad, ataque, defensa, resistencia, voluntad, descriptores, frases=None):
         self.nombre = nombre
         self.salud = salud

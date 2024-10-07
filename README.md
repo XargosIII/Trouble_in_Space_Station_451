@@ -1,6 +1,6 @@
 # Trouble in Space Station 451
 
-![Banner](assets/banner.webm)
+![Banner](assets/banner.jpg)
 
 > **Versión 1.0**  
 > Género: Combate táctico por turnos con elementos roguelike  

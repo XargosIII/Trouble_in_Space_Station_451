@@ -1,3 +1,4 @@
+import pyxel as px
 import random
 
 ########################### Superclase Superguerrero ###########################
@@ -70,16 +71,16 @@ class Superguerrero:
     ########################### Metodos de Mecanicas ###########################
     
     def usar_habilidad(self, dicc_habilidad: dict, enemigos=None, aliados=None)->str:
-        print(dicc_habilidad)
-        habilidad = dicc_habilidad
-        print(habilidad)
-        if habilidad and habilidad['cooldown'] == 0:
+        # print(dicc_habilidad)
+        if dicc_habilidad and dicc_habilidad['cooldown'] == 0:
             # Bajamos el cooldown del resto de las habilidades
             for habilidad in self.habilidades:
+                # Aplicamos la habilidad y actualizamos el cooldown
+                if dicc_habilidad["nombre"] == habilidad["nombre"]:
+                    mensaje = habilidad['accion'](self, enemigos, aliados) if enemigos or aliados else habilidad['accion'](self)
+                    habilidad['cooldown'] = habilidad['tiempo_espera']
                 habilidad['cooldown'] = max(0, habilidad['cooldown'] - 1)
-            # Aplicamos la habilidad y actualizamos el cooldown
-            mensaje = habilidad['accion'](self, enemigos, aliados) if enemigos or aliados else habilidad['accion'](self)
-            habilidad['cooldown'] = habilidad['tiempo_espera']  # Establecemos el cooldown
+              # Establecemos el cooldown
             return mensaje
         else:
             return False
@@ -163,7 +164,8 @@ class Superguerrero:
                 print(f"Soy {self.nombre} y mis condiciones son: {self.condiciones}")
                 mensaje = ""
         else:
-            for k, v in self.condiciones.items():
+            dicc_temporal = self.condiciones.copy()
+            for k, v in dicc_temporal.items():
                 if v["turnos"] > 0:
                     v["turnos"] -= 1
                     if k == "veneno":
@@ -234,7 +236,7 @@ class Conserje_espacial(Superguerrero):
             {"id":"defenderse","nombre": "Defender", "tiempo_espera": 0,"cooldown":0, "descripcion": f"{self.nombre} doblara su defensa a {self.defensa*2} y aumentará su esquiva a {self.esquiva+30}.","tipo_objetivo": "propio","accion": lambda self: self.defenderse()},
             {"id":"saquear_maquina_expendedora","nombre": "Maquina expendedora", "tiempo_espera": 3,"cooldown":0, "descripcion": f"Restaura {self.ataque * 2} de salud a todos los aliados.","tipo_objetivo": "todos_aliados","accion": lambda self, enemigos=None, aliados=None: self.saquear_maquina_expendedora(enemigos, aliados)},
             {"id":"limpieza_a_fondo","nombre": "Limpieza a fondo", "tiempo_espera": 5,"cooldown":0, "descripcion": f"Limpia todos los efectos del aliado objetivo, eliminándolos completamente.","tipo_objetivo": "aliado","accion": lambda self, enemigos=None, aliados=None: self.limpieza_a_fondo(enemigos, aliados)},
-            {"id":"explosion_quimica","nombre": "Explosion quimica", "tiempo_espera": 4,"cooldown":0, "descripcion": f"Lanza una mezcla de productos químicos a un enemigo, causando ({self.ataque * 3}) de danyo y {self.ataque * 2} de danyo extra por veneno durante 2 turnos.","tipo_objetivo": "enemigo","accion": lambda self, enemigos=None, aliados=None: self.atacar(enemigos, aliados)}
+            {"id":"explosion_quimica","nombre": "Explosion quimica", "tiempo_espera": 4,"cooldown":0, "descripcion": f"Lanza una mezcla de productos químicos a un enemigo, \ncausando ({self.ataque * 3}) de danyo y {self.ataque * 2} de danyo extra por veneno durante 2 turnos.","tipo_objetivo": "enemigo","accion": lambda self, enemigos=None, aliados=None: self.explosion_quimica(enemigos, aliados)}
         ]
         self.frases={
             "inicio_combate": ["¡Esto no estaba en mi contrato!", "¡Vamos a sacar la basura!","¿Quien necesita una limpieza?", "¡Pagareis por mi abrillantadora nuevecita!"],
@@ -280,13 +282,13 @@ class Conserje_espacial(Superguerrero):
         """ Defensa basica activa del limpiaventanas """
         self.defendiendose = True
         condiciones={ 
-            "defensa":{"turnos":1,"bono":self.defensa}, # Duplica su defensa
-            "esquiva":{"turnos":1,"bono":30} # 30% de probabilidad de esquivar ataque
+            "defensa":{"turnos":2,"bono":self.defensa}, # Duplica su defensa
+            "esquiva":{"turnos":2,"bono":30} # 30% de probabilidad de esquivar ataque
         }
         print(f"{self.nombre} se defiende, aumentando la defensa y posibilidad de esquivar.")
         mensaje = f"{self.nombre} se defiende, aumentando la defensa y posibilidad de esquivar."
         self.actualizar_condiciones(condiciones)
-        mensaje += + "\n" + self.actualizar_condiciones()
+        mensaje += "\n" + self.actualizar_condiciones()
         return mensaje 
     
     def saquear_maquina_expendedora(self, enemigos: Superguerrero = [], aliados: Superguerrero = []):
@@ -305,7 +307,8 @@ class Conserje_espacial(Superguerrero):
         """ Elimina todos los efectos negativos de un aliado """
         print(f"{self.nombre} limpia todos los efectos de {aliado.nombre}.")
         mensaje = f"{self.nombre} limpia todos los efectos de {aliado.nombre}."
-        self.condiciones = {}
+        aliado.condiciones = {}
+        mensaje += + "\n" + self.actualizar_condiciones()
         return mensaje
 
     def explosion_quimica(self, enemigos: Superguerrero = [], aliados: list[Superguerrero] = []):
@@ -365,18 +368,19 @@ class Larva_shekamorfa(Superguerrero):
     ########################### Métodos de habilidades ###########################
 
     def atacar(self, enemigos: list[Superguerrero] = [], aliados: list[Superguerrero] = [])->str:
-        if enemigos:
-            enemigo = enemigos[0]
         """ Método para realizar un ataque básico a un objetivo """
+        px.play(1,1) # Reproducimos el sonido de los ataques de las garritas
+        enemigo = enemigos[0] # Seleccionamos siempre el enemigo 0 ya que es de un solo objetivo
+        
         print(f"{self.nombre} ataca con sus pequeñas garras.")
         mensaje = f"{self.nombre} ataca con sus pequeñas garras."
         mensaje = super().atacar(enemigo, mensaje)
         return mensaje
 
     def salto_infectante(self, enemigos: list[Superguerrero] = [], aliados: list[Superguerrero] = []):
-        if enemigos:
-            enemigo = enemigos[0]
         """ Salta hacia un enemigo y lo infecta, causando danyo a lo largo del tiempo. """
+        px.play(1,0) # Reproducimos el sonido del saltito
+        enemigo = enemigos[0] # Seleccionamos siempre el enemigo 0 ya que es de un solo objetivo        
         veneno = {"veneno":{"turnos":3,"danyo":self.ataque}}
         print(f"{self.nombre} salta hacia {enemigo.nombre} y lo infecta durante {veneno["veneno"]["turnos"]} turnos.")
         mensaje = f"{self.nombre} salta hacia {enemigo.nombre} y lo infecta durante {veneno["veneno"]["turnos"]} turnos."

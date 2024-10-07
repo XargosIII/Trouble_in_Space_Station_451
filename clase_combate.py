@@ -1,7 +1,7 @@
 import pyxel as px
 import random
-import contenedor as ct
-import guerreros as ch
+import clase_contenedor as ct
+import clase_Superguerrero as ch
 
 px.init(480, 320, display_scale=3)
 
@@ -66,7 +66,7 @@ class FaseCombate:
         """ Metodo para que los enemigos actuen automaticamente y activemos el control por el jugador """
         if self.personaje_actual in self.enemigos:
             # En el turno del enemigo, seleccionamos aleatoriamente la habilidad y el objetivo
-            habilidad = self.personaje_actual.habilidades[random.randint(0, len(self.personaje_actual.habilidades))] # Para que el enemigo pueda elegirlas aleatoriamente, sacamos de la lista
+            habilidad = random.choice(self.personaje_actual.habilidades) # Para que el enemigo pueda elegirlas aleatoriamente, sacamos de la lista
             print(habilidad)
             objetivo = random.choice(self.aliados)
             mensaje = self.personaje_actual.usar_habilidad(dicc_habilidad = habilidad, enemigos= [objetivo])  # Metodo para saber a que objetivo debe afectar la habilidad
@@ -155,8 +155,8 @@ class FaseCombate:
                 self.objetivo_seleccionado = None
                 
                 # Por si es un caso de habilidad a uno mismo
-                if self.habilidad_seleccionada['nombre'] == "Defenderse":
-                    mensaje = personaje.usar_habilidad("defenderse")
+                if self.habilidad_seleccionada['nombre'] == "Defender":
+                    mensaje = personaje.usar_habilidad(self.habilidad_seleccionada)
                     if mensaje:
                         print(f"Lo que nos devuelve ejecutar defenderse: {mensaje}")
                         self.contenedor_chat.agregar_mensaje(mensaje)

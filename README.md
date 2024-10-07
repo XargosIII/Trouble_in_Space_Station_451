@@ -1,6 +1,9 @@
 # Trouble in Space Station 451
 
+cambiarlo a un gif de las mecanicas del juego
 ![Banner](assets/banner.jpg)
+
+
 
 > **Versión 1.0**  
 > Género: Combate táctico por turnos con elementos roguelike  
@@ -24,7 +27,7 @@
 
 ## Descripción
 
-**Trouble in Space Station 451** es un juego de combate táctico por turnos con toques roguelikes con ambientacion Sci-Fi. Atrapados en una estación espacial invadida por fuerzas hostiles, un grupo de valientes supervivientes debera luchar, negociar y sortear obstaculos para conseguir llegar hasta la lanzadera de evacuación y su salvacion. Cada partida deberia ser única, con eventos aleatorios y un amplio repertorio de clases de personajes inspirados en la cultura pop. Aunque por ahora no hay mas que Cangrejos y Conserjes, todo lo que empiece por C.
+**Trouble in Space Station 451** es un juego Pixelart, del genero combate táctico por turnos con toques roguelikes, con ambientacion Sci-Fi. Atrapados en una estación espacial invadida por fuerzas hostiles, un grupo de valientes supervivientes debera luchar, negociar y sortear obstaculos para conseguir llegar hasta la lanzadera de evacuación y su salvacion. Cada partida deberia ser única, con eventos aleatorios y un amplio repertorio de clases de personajes inspirados en la cultura pop. Aunque por ahora no hay mas que Cangrejos y Conserjes, todo lo que empiece por C.
 
 ## Características Principales
 

@@ -1,7 +1,6 @@
 # Trouble in Space Station 451
 
-cambiarlo a un gif de las mecanicas del juego
-![Banner](assets/banner.jpg)
+![Banner](assets/Trouble_in_space_station1.jpg)
 
 
 

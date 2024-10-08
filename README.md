@@ -1,6 +1,6 @@
 # Trouble in Space Station 451
 
-![Banner](assets/Trouble_in_space_station1.jpg)
+![Banner](assets/Trouble_in_space_station1.gif)
 
 
 

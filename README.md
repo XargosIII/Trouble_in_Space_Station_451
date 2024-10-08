@@ -9,7 +9,7 @@
 > Plataforma: PC y Navegador  
 > Desarrollado por: **Dhalisos**  
 
-- **Pruebalo aqui ->** [PLAY](https://kitao.github.io/pyxel/wasm/launcher/?play=XargosIII.Trouble_in_Space_Station_451.version_web.Trouble_in_Space_Station_451)
+**Pruebalo aqui ->** [PLAY](https://kitao.github.io/pyxel/wasm/launcher/?play=XargosIII.Trouble_in_Space_Station_451.version_web.Trouble_in_Space_Station_451)
 
 ## Índice
 

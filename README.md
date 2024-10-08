@@ -24,6 +24,8 @@
   - [Estados del Juego](#estados-del-juego)
   - [Licencia](#licencia)
 
+- **Pruebalo aqui ->** [PLAY](https://kitao.github.io/pyxel/wasm/launcher/?play=XargosIII.Trouble_in_Space_Station_451.version_web.Trouble_in_Space_Station_451)
+
 ## Descripción
 
 **Trouble in Space Station 451** es un juego Pixelart, del genero combate táctico por turnos con toques roguelikes, con ambientacion Sci-Fi. Atrapados en una estación espacial invadida por fuerzas hostiles, un grupo de valientes supervivientes debera luchar, negociar y sortear obstaculos para conseguir llegar hasta la lanzadera de evacuación y su salvacion. Cada partida deberia ser única, con eventos aleatorios y un amplio repertorio de clases de personajes inspirados en la cultura pop. Aunque por ahora no hay mas que Cangrejos y Conserjes, todo lo que empiece por C.

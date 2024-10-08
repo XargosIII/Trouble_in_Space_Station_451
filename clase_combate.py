@@ -5,7 +5,7 @@ import clase_Superguerrero as ch
 
 px.init(480, 320, display_scale=3)
 
-px.load("assets\\space_station.pyxres")
+px.load("space_station.pyxres")
 
 
 # Constantes para la pantalla y el tamaño de los sprites

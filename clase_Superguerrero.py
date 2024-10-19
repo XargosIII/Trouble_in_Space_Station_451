@@ -84,50 +84,7 @@ class Superguerrero:
             return mensaje
         else:
             return False
-    
-    """ Antiguo usar habilidad
-    def usar_habilidad(self, habilidad, objetivo=None, aliados=None, enemigos=None)->str:
-        Metodo para detectar el tipo de objetivo que requiere la habilidad
-        mensaje = "" # Inicializamos el mensaje
-        tipo_objetivo = habilidad.get('tipo_objetivo', 'enemigo')
 
-        if tipo_objetivo == "enemigo" and objetivo:
-            print(f"{self.nombre} usa {habilidad['nombre']} en {objetivo.nombre}.")
-            mensaje = habilidad['accion'](objetivo)
-
-        elif tipo_objetivo == "todos_enemigos" and enemigos:
-            print(f"{self.nombre} usa {habilidad['nombre']} en todos los enemigos.")
-            for enemigo in enemigos:
-                mensaje += habilidad['accion'](enemigo)
-
-        elif tipo_objetivo == "aliado" and objetivo:
-            print(f"{self.nombre} usa {habilidad['nombre']} en {objetivo.nombre}.")
-            mensaje = habilidad['accion'](objetivo)
-
-        elif tipo_objetivo == "todos_aliados" and aliados:
-            print(f"{self.nombre} usa {habilidad['nombre']} en todos los aliados.")
-            for aliado in aliados:
-                mensaje += habilidad['accion'](aliado)
-
-        elif tipo_objetivo == "propio":
-            print(f"{self.nombre} usa {habilidad['nombre']} sobre sí mismo.")
-            mensaje = habilidad['accion'](self) # Aplicamos la habilidad sobre el propio personaje
-
-        elif tipo_objetivo == "enemigo_aleatorio" and enemigos:
-            enemigo = random.choice(enemigos)
-            print(f"{self.nombre} usa {habilidad['nombre']} en {enemigo.nombre}.")
-            mensaje = habilidad['accion'](enemigo)
-
-        elif tipo_objetivo == "todos":
-            print(f"{self.nombre} usa {habilidad['nombre']} en todos.")
-            for personaje in aliados + enemigos + [self]:
-                mensaje += habilidad['accion'](personaje)
-
-        else:
-            print(f"No hay objetivo adecuado para la habilidad {habilidad['nombre']}.")
-            mensaje = f"No hay objetivo adecuado para la habilidad {habilidad['nombre']}."
-            
-        return mensaje"""
     
     def defender(self, danyo)->str:
         """ Reduce el danyo recibido en función del atributo defensa """
@@ -139,16 +96,20 @@ class Superguerrero:
             danyo_recibido = max(0, danyo - self.defensa) # Forma super chula de quitarme un if else comprimido. Devuelve 0 si el otro parametro es menor que 0, con lo cual me quito los negativos
             self.salud -= danyo_recibido
             if danyo_recibido:
-                print(f"{self.nombre} recibe {danyo_recibido} de danyo. Salud restante: {self.salud}.")
-                mensaje = f"{self.nombre} recibe {danyo_recibido} de danyo. Salud restante: {self.salud}."
+                if not self.sigue_vivo():
+                        mensaje = f"{self.nombre} ha caido en batalla"
+                        mensaje += "  " + random.choice(self.frases["morir"])
+                        print(mensaje)
+                else:
+                    mensaje = f"{self.nombre} recibe {danyo_recibido} de danyo. Salud restante: {self.salud}."
+                    print(mensaje)
             else:
-                print(f"La defensa de {self.nombre} niega todo el danyo recibido.")
                 mensaje = f"La defensa de {self.nombre} niega todo el danyo recibido."
+                print(mensaje)
         return mensaje
     
     # Esto habria que crearlo como una clase a parte, que se instancia en cada guerrero...
     # pero estoy cansado para pensarlo ahora
-
     def actualizar_condiciones(self, dicc_condicion: dict = None):
         """ Metodo que actualiza todas las condiciones existentes o añade una nueva, 
         dependiendo de si se le pasa un diccionario o no."""
@@ -172,14 +133,19 @@ class Superguerrero:
                         danyo_veneno = max(0, v["danyo"] - (self.resistencia / 2))
                         if danyo_veneno > 0:
                             self.salud -= danyo_veneno
-                            print(f"{self.nombre} recibe {danyo_veneno} de danyo por veneno.")
-                            mensaje = f"{self.nombre} recibe {danyo_veneno} de danyo por veneno."
+                            if not self.sigue_vivo():
+                                mensaje = f"{self.nombre} ha caido en batalla"
+                                mensaje += "  " + random.choice(self.frases["morir"])
+                                print(mensaje)
+                            else:
+                                mensaje = f"{self.nombre} recibe {danyo_veneno} de danyo por veneno."
+                                print(mensaje)
                         else:
-                            print(f"{self.nombre} ha resistido el danyo del veneno")
                             mensaje = f"{self.nombre} ha resistido el danyo del veneno"
+                            print(mensaje)
                     if v["turnos"] == 0:
-                        print(f"{self.nombre} pierde {k}.")
                         mensaje = f"{self.nombre} pierde {k}."
+                        print(mensaje)
                         if k != "veneno":
                             setattr(self, k, getattr(self, k) - v["bono"])  # Igual que arriba, reseteamos solo la estadística relevante, fuera elifs
                         del self.condiciones[k]
@@ -293,22 +259,26 @@ class Conserje_espacial(Superguerrero):
     
     def saquear_maquina_expendedora(self, enemigos: Superguerrero = [], aliados: Superguerrero = []):
         """ Restaura una pequeña cantidad de salud a todos los aliados """
-        for aliado in aliados:
-            aliado.salud += self.ataque * 2
-            print(f"{self.nombre} restaura 10 de salud a {aliado.nombre}. Salud actual de {aliado.nombre}: {aliado.salud}.")
-            mensaje = f"{self.nombre} restaura 10 de salud a {aliado.nombre}. Salud actual de {aliado.nombre}: {aliado.salud}."
-            mensaje += "\n" + self.actualizar_condiciones()
-            return mensaje 
+        mensaje = ""
+        if aliados:
+            for aliado in aliados:
+                aliado.salud += self.ataque * 2
+                print(f"{self.nombre} restaura 10 de salud a {aliado.nombre}. Salud actual de {aliado.nombre}: {aliado.salud}.")
+                mensaje = f"{self.nombre} restaura 10 de salud a {aliado.nombre}. Salud actual de {aliado.nombre}: {aliado.salud}.\n"
+            mensaje += self.actualizar_condiciones()
+        return mensaje 
             
 
     def limpieza_a_fondo(self, enemigos: Superguerrero = [], aliados: Superguerrero = []):
-        if aliados:
-            aliado = aliados[0]
         """ Elimina todos los efectos negativos de un aliado """
-        print(f"{self.nombre} limpia todos los efectos de {aliado.nombre}.")
-        mensaje = f"{self.nombre} limpia todos los efectos de {aliado.nombre}."
-        aliado.condiciones = {}
-        mensaje += + "\n" + self.actualizar_condiciones()
+        mensaje = ""
+        if aliados:
+            aliado = aliados[0]        
+            print(f"{self.nombre} limpia todos los efectos de {aliado.nombre}.")
+            mensaje = f"{self.nombre} limpia todos los efectos de {aliado.nombre}."
+            aliado.condiciones = dict()
+            print(aliado.consultar_condiciones())
+            mensaje += "\n" + self.actualizar_condiciones()
         return mensaje
 
     def explosion_quimica(self, enemigos: Superguerrero = [], aliados: list[Superguerrero] = []):
@@ -330,13 +300,14 @@ class Conserje_espacial(Superguerrero):
 
 class Larva_shekamorfa(Superguerrero):
     def __init__(self, nombre: str = "Larva Shekamorfa"):
+        salud = px.rndi(20, 35)
         super().__init__(
             nombre=nombre,
-            salud=30,
-            salud_max=30,
-            velocidad=15,
+            salud=salud,
+            salud_max=salud,
+            velocidad=px.rndi(5, 15),
             ataque=10,
-            defensa=0,
+            defensa=px.rndi(0, 2),
             resistencia=5,
             voluntad=3,
             descriptores=["enemigo", "infectador"],
@@ -362,7 +333,10 @@ class Larva_shekamorfa(Superguerrero):
         Metodo que devuelve dicionario con los datos de la libreria pixel 
         para localizar el sprite de la larva y pintarlo usando el metodo blt 
         """
-        datos_blt = {"u":16,"v":0,"img":0,"w":16,"h":16}
+        if self.sigue_vivo():
+            datos_blt = {"u":0,"v":0,"img":0,"w":16,"h":16,"rotate":0}
+        else:
+            datos_blt = {"u":16,"v":0,"img":0,"w":16,"h":16,"rotate":180}
         return datos_blt
 
     ########################### Métodos de habilidades ###########################

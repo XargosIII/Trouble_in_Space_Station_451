@@ -5,7 +5,7 @@ import clase_Superguerrero as ch
 
 px.init(480, 320, display_scale=3)
 
-px.load("space_station.pyxres")
+px.load("assets\space_station.pyxres")
 
 
 # Constantes para la pantalla y el tamaño de los sprites
@@ -41,11 +41,6 @@ class FaseCombate:
         self.contenedor_habilidades_descripcion = ct.Contenedor(122, 163, 352, 72, "Descripcion")
         self.contenedor_chat = ct.Contenedor(10, 246, 464, 72, "Chat")
  
-        """# Agregar aliados y enemigos a sus respectivos contenedores
-        for aliado in aliados:
-            self.contenedor_aliados.añadir_elemento(aliado)
-        for enemigo in enemigos:
-            self.contenedor_enemigos.añadir_elemento(enemigo)"""
             
         # Agregamos los elementos de los contenedores iniciales y finales 
         self.contenedor_inicio_batalla.añadir_elemento("\n\n¡Prepárate para la batalla!")
@@ -93,10 +88,15 @@ class FaseCombate:
     def establecer_personaje_y_turno_actual(self, personaje_extra_turno: ch.Superguerrero = None):
         """ Metodo para establecer quien tiene el turno """
         if not personaje_extra_turno:
-            # Avanzar al siguiente guerrero en el turno
-            self.turno_actual = (self.turno_actual + 1) % len(self.turnos)
-            # El proximo en la lista de turnos se convierte en el personaje_actual(que tiene el turno)
-            self.personaje_actual = self.turnos[self.turno_actual]
+            # Encontramos al proximo guerrero vivo en la lista de turnos
+            num_personajes = len(self.turnos)
+            for _ in range(num_personajes):
+                # Vamos recorriendo la lista si hasta encontrarlo
+                self.turno_actual = (self.turno_actual + 1) % num_personajes
+                # Comprobamos si sigue vivo, y si es asi, le damos el turno
+                if self.turnos[self.turno_actual].sigue_vivo():
+                    self.personaje_actual = self.turnos[self.turno_actual]
+                    break
         else:
             # El pasado como atributo se convierte en el personaje_actual(que tiene el turno)
             self.personaje_actual = personaje_extra_turno
@@ -154,11 +154,13 @@ class FaseCombate:
                 self.seleccionando_habilidad = False
                 self.objetivo_seleccionado = None
                 
-                # Por si es un caso de habilidad a uno mismo
-                if self.habilidad_seleccionada['nombre'] == "Defender":
-                    mensaje = personaje.usar_habilidad(self.habilidad_seleccionada)
+                # Por si es un caso de habilidad a uno mismo o grupal
+                if self.habilidad_seleccionada['tipo_objetivo'] in ["propio","todos_aliados","todos_enemigos"]:
+                    if self.habilidad_seleccionada['tipo_objetivo'] in ["propio"]:
+                        mensaje = personaje.usar_habilidad(self.habilidad_seleccionada)
+                    else:
+                        mensaje = personaje.usar_habilidad(self.habilidad_seleccionada,enemigos=self.enemigos, aliados=self.aliados)
                     if mensaje:
-                        print(f"Lo que nos devuelve ejecutar defenderse: {mensaje}")
                         self.contenedor_chat.agregar_mensaje(mensaje)
                         self.verificar_estado()
                         self.habilidad_seleccionada = None
@@ -168,7 +170,12 @@ class FaseCombate:
                         mensaje = f"La habilidad {self.habilidad_seleccionada['nombre']} está en tiempo de espera."
                     # Empezamos la seleccion de objetivo para el resto de casos
                 else:
-                    self.enemigo_seleccionado = 0
+                    if self.habilidad_seleccionada['tipo_objetivo'] == "aliado":
+                        self.aliado_seleccionado = 0
+                        print(f"Aliado seleccionado: {self.aliado_seleccionado}")
+                    else:
+                        self.enemigo_seleccionado = 0
+                        print(f"Enemigo seleccionado: {self.enemigo_seleccionado}")
                     self.seleccionando_objetivo = True
     
 
@@ -176,28 +183,41 @@ class FaseCombate:
 
         if self.habilidad_seleccionada:
             # Número de objetivos disponibles
-            num_objetivos = len(self.enemigos)
+            num_objetivos = len(self.aliados) if self.habilidad_seleccionada['tipo_objetivo'] == "aliado" else len(self.enemigos)
             
             # Navegar por los enemigos con teclas de dirección
             if px.btnp(px.KEY_DOWN):
-                self.enemigo_seleccionado = (self.enemigo_seleccionado + 1) % num_objetivos
+                if self.habilidad_seleccionada['tipo_objetivo'] == "aliado":
+                    self.aliado_seleccionado = (self.aliado_seleccionado + 1) % num_objetivos
+                    print(f"Aliado seleccionado: {self.aliado_seleccionado}")
+                else:
+                    self.enemigo_seleccionado = (self.enemigo_seleccionado + 1) % num_objetivos
+                    print(f"Enemigo seleccionado: {self.enemigo_seleccionado}")
 
             elif px.btnp(px.KEY_UP):
-                self.enemigo_seleccionado = (self.enemigo_seleccionado - 1) % num_objetivos
+                if self.habilidad_seleccionada['tipo_objetivo'] == "aliado":
+                    self.aliado_seleccionado = (self.aliado_seleccionado - 1) % num_objetivos
+                    print(f"Aliado seleccionado: {self.aliado_seleccionado}")
+                else:
+                    self.enemigo_seleccionado = (self.enemigo_seleccionado - 1) % num_objetivos
+                    print(f"Enemigo seleccionado: {self.enemigo_seleccionado}")
             
             # Confirmar selección del objetivo con Enter
             if px.btnp(px.KEY_RETURN):
-                self.objetivo_seleccionado = self.enemigos[self.enemigo_seleccionado]
-                # Version 2, que creo que esta mal, y el problema era otro
                 # Adquirimos el diccionario entero para la habilidad seleccionada
                 habilidad = self.habilidad_seleccionada
                 print(habilidad)
-                # Ejecuta la habilidad seleccionada y guarda el mensaje
-                mensaje = personaje.usar_habilidad(habilidad, enemigos = [self.objetivo_seleccionado], aliados=self.aliados)
+                # Ejecuta la habilidad seleccionada y guardamos el mensaje
+                if self.habilidad_seleccionada['tipo_objetivo'] == "aliado":
+                    self.objetivo_seleccionado = self.aliados[self.aliado_seleccionado]
+                    mensaje = personaje.usar_habilidad(habilidad, enemigos = self.enemigos, aliados=[self.objetivo_seleccionado])
+                else:
+                    self.objetivo_seleccionado = self.enemigos[self.enemigo_seleccionado]
+                    mensaje = personaje.usar_habilidad(habilidad, enemigos = [self.objetivo_seleccionado], aliados=self.aliados)
                 self.contenedor_chat.agregar_mensaje(mensaje)
                 self.verificar_estado()  # Comprobamos si esta habilidad nos ha llevado a la victoria
                 # Deseleccionamos habilidad y enemigo
-                self.habilidad_seleccionada, self.enemigo_seleccionado = None, None
+                self.habilidad_seleccionada, self.enemigo_seleccionado, self.aliado_seleccionado = None, None, None
                 # Añadimos mensaje para terminar turno
                 self.contenedor_chat.agregar_mensaje("Pulsa la barra espaciadora para continuar.")
                 # Flag para esperar en ejecuciones hasta que se cumpla el turno
@@ -221,22 +241,6 @@ class FaseCombate:
             mensaje = "¡Los enemigos ganan!"
             self.contenedor_chat.agregar_mensaje(mensaje)
             self.fase_final = True
-        # Eliminamos a los supervivientes muertos
-        for aliado in self.aliados:
-            if not aliado.sigue_vivo():
-                mensaje = f"{aliado.nombre} ha caido en batalla"
-                mensaje += "  " + random.choice(aliado.frases["morir"])
-                self.contenedor_chat.agregar_mensaje(mensaje)
-                print(mensaje)
-                self.aliados.remove(aliado)
-        # Eliminamos a los enemigos muertos
-        for enemigo in self.enemigos:
-            if not enemigo.sigue_vivo():
-                mensaje = f"{enemigo.nombre} ha caido en batalla"
-                mensaje += "  " + random.choice(enemigo.frases["morir"])
-                self.contenedor_chat.agregar_mensaje(mensaje)
-                print(mensaje)
-                self.enemigos.remove(enemigo)
 
         
     def dibujar_escenario(self):
@@ -283,7 +287,7 @@ class FaseCombate:
                 alto_barra = int((aliado.salud / aliado.salud_max) * 32)  # Calcula la altura de la barra verde
                 px.rect(x+20, y-8, ancho_barra, 32, px.COLOR_RED)  # Dibuja la barra roja de fondo
                 px.rect(x+20, y-8 + (32 - alto_barra), ancho_barra, alto_barra, col=11)  # Dibuja la barra verde encima
-                if i == self.aliado_seleccionado or aliado == self.personaje_actual:
+                if i == self.aliado_seleccionado or (aliado == self.personaje_actual and self.habilidad_seleccionada == None):
                     px.blt(x - 10, y + 7, 0, 40, 24, 8, 8) # Flecha indicadora
                 if len(aliado.condiciones)>0:
                     for i,k in enumerate(aliado.condiciones.keys()):
@@ -300,24 +304,32 @@ class FaseCombate:
                 x = self.contenedor_enemigos.x + 20
                 y = self.contenedor_enemigos.y + 6 + i * 25
                 datos_blt = enemigo.datos_blt_sprite()
-                px.blt(x, y, datos_blt["img"], datos_blt["u"], datos_blt["v"], datos_blt["w"], datos_blt["h"], 0)
+                px.blt(x, y, datos_blt["img"], datos_blt["u"], datos_blt["v"], datos_blt["w"], datos_blt["h"], 0, rotate=datos_blt["rotate"])
                 # px.text(x + 20, y + 4, f"{enemigo.nombre} HP: {enemigo.salud}", px.COLOR_WHITE)
-                px.text(x, y+20, f"HP: {enemigo.salud}", px.COLOR_GREEN)
-                # Si es nuestro objetivo, lo marcamos con una flecha roja, si no, no hay flecha
-                if i == self.enemigo_seleccionado or enemigo == self.personaje_actual:
-                    px.blt(x - 10, y + 9, 0, 40, 24, 8, 8)
-                # Si es nuestro objetivo, aparecera su nombre en azul, a la derecha de el
-                nombre_enemigo = f"{enemigo.nombre}" if i == self.enemigo_seleccionado else ""
-                px.text(x + 25, y+9, nombre_enemigo, px.COLOR_RED)  # Nombre del enemigo 
-                if len(enemigo.condiciones)>0:
-                    for i,k in enumerate(enemigo.condiciones.keys()):
-                        if k == "veneno":
-                            px.blt(x+30+(i*9),y+18,0,32,16,8,8)
-                        elif k == "defensa":
-                            px.blt(x+30+(i*9),y+18,0,40,16,8,8)
-                        elif k == "esquiva":
-                            px.blt(x+30+(i*9),y+18,0,32,24,8,8)       
-            
+                # Si sigue vivo le pintamos todo lo que haga falta
+                if enemigo.sigue_vivo():
+                    px.text(x, y+20, f"HP: {enemigo.salud}", px.COLOR_GREEN)
+                    # Si es nuestro objetivo, lo marcamos con una flecha roja, si no, no hay flecha
+                    if i == self.enemigo_seleccionado or enemigo == self.personaje_actual:
+                        px.blt(x - 10, y + 9, 0, 40, 24, 8, 8)
+                    # Si es nuestro objetivo, aparecera su nombre en azul, a la derecha de el
+                    nombre_enemigo = f"{enemigo.nombre}" if i == self.enemigo_seleccionado else ""
+                    px.text(x + 25, y+9, nombre_enemigo, px.COLOR_RED)  # Nombre del enemigo 
+                    if len(enemigo.condiciones)>0:
+                        for i,k in enumerate(enemigo.condiciones.keys()):
+                            if k == "veneno":
+                                px.blt(x+30+(i*9),y+18,0,32,16,8,8)
+                            elif k == "defensa":
+                                px.blt(x+30+(i*9),y+18,0,40,16,8,8)
+                            elif k == "esquiva":
+                                px.blt(x+30+(i*9),y+18,0,32,24,8,8)       
+                # Si no calaverita
+                else:
+                    # Vida en rojo
+                    px.text(x, y+20, f"HP: {enemigo.salud}", px.COLOR_RED)
+                    # Icono de calavera
+                    px.blt(x+30,y+10,0,0,32,8,8)
+                
 
     def actualizar(self):
         """ Metodo que se llama constantemente en el motor pyxel """
